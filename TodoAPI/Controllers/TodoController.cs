@@ -14,13 +14,31 @@ namespace TodoAPI.Controllers
         public readonly IUnitOfWork _context;
         public TodoController(IUnitOfWork todoContext)
         {
-            _context = todoContext; 
+            _context = todoContext;
         }
-        [HttpGet("{id}")]   
+        [HttpGet("{id}")]
         public async Task<ActionResult<TodoItem>> GetTodoItem(int id)
         {
-            var todoItem = await _context.TodoItemRepository.GetById(p=>p.Id==id);  
-            return todoItem is null ? NotFound() : todoItem;    
+            var todoItem = await _context.TodoItemRepository.GetById(p => p.Id == id);
+            return todoItem is null ? NotFound() : todoItem;
+        }
+        [HttpGet("/items")]
+        public async Task<ActionResult<IEnumerable<TodoItem>>> Get()
+        {
+            var todoItem = await _context.TodoItemRepository.Get().ToListAsync();
+            return todoItem is null ? NotFound() : todoItem;
+        }
+        [HttpGet("/items/completed")]
+        public async Task<IEnumerable<TodoItem>> GetTodoItemCompleted()
+        {
+            var todoItem = await _context.TodoItemRepository.GetAllTaskCompleted();
+            return todoItem;
+        }
+        [HttpGet("/items/no-completed")]
+        public async Task<IEnumerable<TodoItem>> GetTodoItemNoCompleted()
+        {
+            var todoItem = await _context.TodoItemRepository.GetAllTaskNoCompleted();
+            return todoItem;
         }
         [HttpPost]
         public async Task<ActionResult<TodoItem>> PostTodoItem(TodoItem todoItem)
@@ -29,6 +47,7 @@ namespace TodoAPI.Controllers
             await _context.Commit(); 
             return CreatedAtAction(nameof(GetTodoItem), new { id = todoItem.Id }, todoItem);
         }
+
         [HttpPut("{id}")]
         public async Task<ActionResult<TodoItem>> PutTodoItem(int id,TodoItem todoItem)
         {
